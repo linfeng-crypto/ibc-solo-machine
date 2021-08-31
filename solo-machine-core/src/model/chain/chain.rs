@@ -81,7 +81,7 @@ impl Chain {
             .ok_or_else(|| anyhow!("connection details not found when fetching balance"))?;
 
         let request = QueryBalanceRequest {
-            address: signer.to_account_address()?,
+            address: signer.to_account_address().await?,
             denom,
         };
 

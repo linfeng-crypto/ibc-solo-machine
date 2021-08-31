@@ -95,7 +95,7 @@ pub async fn msg_create_solo_machine_client(
     chain: &Chain,
     memo: String,
 ) -> Result<TxRaw> {
-    let any_public_key = signer.to_public_key()?.to_any()?;
+    let any_public_key = signer.to_public_key().await?.to_any()?;
 
     let consensus_state = SoloMachineConsensusState {
         public_key: Some(any_public_key),
@@ -118,7 +118,7 @@ pub async fn msg_create_solo_machine_client(
     let message = MsgCreateClient {
         client_state: Some(any_client_state),
         consensus_state: Some(any_consensus_state),
-        signer: signer.to_account_address()?,
+        signer: signer.to_account_address().await?,
     };
 
     build(signer, chain, &[message], memo, None).await
@@ -143,7 +143,7 @@ pub async fn msg_update_solo_machine_client<'e>(
 
     let any_public_key = match new_public_key {
         Some(new_public_key) => new_public_key.to_any()?,
-        None => signer.to_public_key()?.to_any()?,
+        None => signer.to_public_key().await?.to_any()?,
     };
 
     let signature = get_header_proof(
@@ -176,7 +176,7 @@ pub async fn msg_update_solo_machine_client<'e>(
     let message = MsgUpdateClient {
         client_id: connection_details.solo_machine_client_id.to_string(),
         header: Some(any_header),
-        signer: signer.to_account_address()?,
+        signer: signer.to_account_address().await?,
     };
 
     build(signer, chain, &[message], memo, None).await
@@ -236,7 +236,7 @@ pub async fn msg_connection_open_init(
             features: vec!["ORDER_ORDERED".to_string(), "ORDER_UNORDERED".to_string()],
         }),
         delay_period: 0,
-        signer: signer.to_account_address()?,
+        signer: signer.to_account_address().await?,
     };
 
     build(signer, chain, &[message], memo, None).await
@@ -283,7 +283,7 @@ pub async fn msg_connection_open_ack(
         proof_client,
         proof_consensus,
         consensus_height: tendermint_client_state.latest_height,
-        signer: signer.to_account_address()?,
+        signer: signer.to_account_address().await?,
     };
 
     build(signer, chain, &[message], memo, None).await
@@ -307,7 +307,7 @@ pub async fn msg_channel_open_init(
             connection_hops: vec![solo_machine_connection_id.to_string()],
             version: "ics20-1".to_string(),
         }),
-        signer: signer.to_account_address()?,
+        signer: signer.to_account_address().await?,
     };
 
     build(signer, chain, &[message], memo, None).await
@@ -334,7 +334,7 @@ pub async fn msg_channel_open_ack(
         counterparty_version: "ics20-1".to_string(),
         proof_height: Some(proof_height),
         proof_try,
-        signer: signer.to_account_address()?,
+        signer: signer.to_account_address().await?,
     };
 
     build(signer, chain, &[message], memo, None).await
@@ -362,7 +362,7 @@ where
         )
     })?;
 
-    let sender = signer.to_account_address()?;
+    let sender = signer.to_account_address().await?;
 
     let packet_data = TokenTransferPacketData {
         denom: denom.to_string(),
@@ -427,7 +427,7 @@ pub async fn msg_token_receive(
         )
     })?;
 
-    let sender = signer.to_account_address()?;
+    let sender = signer.to_account_address().await?;
 
     let message = MsgTransfer {
         source_port: chain.config.port_id.to_string(),
@@ -472,7 +472,7 @@ pub async fn msg_token_receive_ack<'e>(
         acknowledgement,
         proof_acked,
         proof_height: Some(proof_height),
-        signer: signer.to_account_address()?,
+        signer: signer.to_account_address().await?,
     };
 
     build(signer, chain, &[message], memo, request_id).await
@@ -493,8 +493,9 @@ where
 
     let (account_number, account_sequence) = get_account_details(&signer, chain).await?;
 
-    let auth_info =
-        build_auth_info(&signer, chain, account_sequence).context("unable to build auth info")?;
+    let auth_info = build_auth_info(&signer, chain, account_sequence)
+        .await
+        .context("unable to build auth info")?;
     let auth_info_bytes = proto_encode(&auth_info)?;
 
     let signature = build_signature(
@@ -533,13 +534,13 @@ where
     })
 }
 
-fn build_auth_info(
+async fn build_auth_info(
     signer: impl ToPublicKey,
     chain: &Chain,
     account_sequence: u64,
 ) -> Result<AuthInfo> {
     let signer_info = SignerInfo {
-        public_key: Some(signer.to_public_key()?.to_any()?),
+        public_key: Some(signer.to_public_key().await?.to_any()?),
         mode_info: Some(ModeInfo {
             sum: Some(Sum::Single(Single { mode: 1 })),
         }),
@@ -592,7 +593,7 @@ async fn get_account_details(signer: impl ToPublicKey, chain: &Chain) -> Result<
             chain.config.grpc_addr
         ))?;
 
-    let account_address = signer.to_account_address()?;
+    let account_address = signer.to_account_address().await?;
 
     let response = query_client
         .account(QueryAccountRequest {

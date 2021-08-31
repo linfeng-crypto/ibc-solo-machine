@@ -187,7 +187,7 @@ impl ChainCommand {
                 };
 
                 chain_service
-                    .add(&config, &signer.to_public_key()?.encode())
+                    .add(&config, &signer.to_public_key().await?.encode())
                     .await
                     .map(|_| ())
             }

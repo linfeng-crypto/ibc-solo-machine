@@ -285,7 +285,7 @@ impl IbcService {
             .await?
             .ok_or_else(|| anyhow!("chain details for {} not found", chain_id))?;
 
-        let address = signer.to_account_address()?;
+        let address = signer.to_account_address().await?;
         let receiver = receiver.unwrap_or_else(|| address.clone());
 
         let rpc_client = HttpClient::new(chain.config.rpc_addr.as_str())
@@ -415,7 +415,7 @@ impl IbcService {
         //     .await
         //     .context("unable to commit transaction for receiving tokens over IBC")?;
 
-        let address = signer.to_account_address()?;
+        let address = signer.to_account_address().await?;
 
         let msg = transaction_builder::msg_token_receive(
             &signer,
@@ -530,7 +530,7 @@ impl IbcService {
             &self.notifier,
             Event::SignerUpdated {
                 chain_id,
-                old_public_key: signer.to_public_key()?,
+                old_public_key: signer.to_public_key().await?,
                 new_public_key,
             },
         )
@@ -543,7 +543,7 @@ impl IbcService {
         limit: u32,
         offset: u32,
     ) -> Result<Vec<Operation>> {
-        let account_address = signer.to_account_address()?;
+        let account_address = signer.to_account_address().await?;
         operation::get_operations(&self.db_pool, &account_address, limit, offset).await
     }
 

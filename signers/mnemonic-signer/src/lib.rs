@@ -79,8 +79,9 @@ fn get_env(key: &str) -> Result<String> {
     ))
 }
 
+#[async_trait]
 impl ToPublicKey for MnemonicSigner {
-    fn to_public_key(&self) -> Result<PublicKey> {
+    async fn to_public_key(&self) -> Result<PublicKey> {
         let signing_key = self.get_signing_key()?;
         let verifying_key = signing_key.verifying_key();
 
@@ -95,8 +96,9 @@ impl ToPublicKey for MnemonicSigner {
         &self.account_prefix
     }
 
-    fn to_account_address(&self) -> Result<String> {
-        self.to_public_key()?
+    async fn to_account_address(&self) -> Result<String> {
+        self.to_public_key()
+            .await?
             .account_address(self.get_account_prefix())
     }
 }
