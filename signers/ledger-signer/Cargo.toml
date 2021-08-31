@@ -1,0 +1,20 @@
+[package]
+name = "ledger-signer"
+version = "0.1.0"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0"
+solo-machine-core = { path = "../../solo-machine-core" }
+ledger-transport = { version = "0.8"}
+ledger-transport-hid = { version = "0.8"}
+ledger-zondax-generic = { version = "0.8"}
+zx-bip44 = "0.1"
+async-trait = "0.1"
+log = "0.4"
+k256 = { version = "0.9.6", features = ["ecdsa"] }
+
+[lib]
+crate-type = ["dylib"]

@@ -67,43 +67,75 @@ impl AsRef<[u8]> for Message<'_> {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+/// Ledger supported currencies
+pub enum LedgerCurrency {
+    /// crypto.com coin
+    CryptoCom,
+    /// Cosmos coin
+    Cosmos,
+    #[cfg(feature = "ethermint")]
+    /// ethermint coin
+    Ethermint,
+}
+
+impl FromStr for LedgerCurrency {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "crypto-com" => Ok(Self::CryptoCom),
+            "cosmos" => Ok(Self::Cosmos),
+            #[cfg(feature = "ethermint")]
+            "ethermint" => Ok(Self::Ethermint),
+            _ => Err(anyhow!(
+                "invalid currency {}, only support crypto-com|cosmos|ethermint",
+                s
+            )),
+        }
+    }
+}
+
 /// This trait must be implemented by all the public key providers (e.g. mnemonic, ledger, etc.)
+#[async_trait]
 pub trait ToPublicKey {
     /// Returns public key of signer
-    fn to_public_key(&self) -> Result<PublicKey>;
+    async fn to_public_key(&self) -> Result<PublicKey>;
 
     /// Returns account prefix for computing bech32 addresses
     fn get_account_prefix(&self) -> &str;
 
     /// Returns accounts address for this signer for given prefix
-    fn to_account_address(&self) -> Result<String>;
+    async fn to_account_address(&self) -> Result<String>;
 }
 
-impl<T: ToPublicKey> ToPublicKey for &T {
-    fn to_public_key(&self) -> Result<PublicKey> {
-        (*self).to_public_key()
+#[async_trait]
+impl<T: ToPublicKey + Send + Sync> ToPublicKey for &T {
+    async fn to_public_key(&self) -> Result<PublicKey> {
+        (*self).to_public_key().await
     }
 
     fn get_account_prefix(&self) -> &str {
         (*self).get_account_prefix()
     }
 
-    fn to_account_address(&self) -> Result<String> {
-        (*self).to_account_address()
+    async fn to_account_address(&self) -> Result<String> {
+        (*self).to_account_address().await
     }
 }
 
-impl<T: ToPublicKey + ?Sized> ToPublicKey for Arc<T> {
-    fn to_public_key(&self) -> Result<PublicKey> {
-        (**self).to_public_key()
+#[async_trait]
+impl<T: ToPublicKey + ?Sized + Sync + Send> ToPublicKey for Arc<T> {
+    async fn to_public_key(&self) -> Result<PublicKey> {
+        (**self).to_public_key().await
     }
 
     fn get_account_prefix(&self) -> &str {
         (**self).get_account_prefix()
     }
 
-    fn to_account_address(&self) -> Result<String> {
-        (**self).to_account_address()
+    async fn to_account_address(&self) -> Result<String> {
+        (**self).to_account_address().await
     }
 }
 

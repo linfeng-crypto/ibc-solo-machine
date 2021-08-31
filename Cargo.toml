@@ -4,4 +4,5 @@ members = [
     "solo-machine-core",
     "event-hooks/stdout-logger",
     "signers/mnemonic-signer",
+    "signers/ledger-signer",
 ]
