@@ -168,6 +168,7 @@ where
                 &self
                     .signer
                     .to_public_key()
+                    .await
                     .map_err(|err| Status::internal(err.to_string()))?
                     .encode(),
             )
