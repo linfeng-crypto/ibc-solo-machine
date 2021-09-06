@@ -40,25 +40,32 @@ impl ChainService {
 
     /// Add details of an IBC enabled chain
     pub async fn add(&self, config: &ChainConfig, public_key: &str) -> Result<ChainId> {
+        println!("step 1");
         let tendermint_client = HttpClient::new(config.rpc_addr.as_str())?;
         let status = tendermint_client.status().await?;
+        println!("step 2");
 
         let chain_id: ChainId = status.node_info.network.to_string().parse()?;
         let node_id: NodeId = status.node_info.id;
 
+        println!("step 3");
         let mut transaction = self
             .db_pool
             .begin()
             .await
             .context("unable to begin database transaction")?;
 
+        println!("step 4");
         chain::add_chain(&mut transaction, &chain_id, &node_id, config).await?;
+        println!("step 5");
         chain_keys::add_chain_key(&mut transaction, &chain_id, public_key).await?;
+        println!("step 6");
 
         transaction
             .commit()
             .await
             .context("unable to commit transaction for adding IBC chain")?;
+        println!("step 7");
 
         notify_event(
             &self.notifier,
@@ -66,6 +73,7 @@ impl ChainService {
                 chain_id: chain_id.clone(),
             },
         )?;
+        println!("step 8");
 
         Ok(chain_id)
     }

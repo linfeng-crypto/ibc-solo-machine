@@ -13,6 +13,7 @@ use tokio::sync::mpsc::UnboundedSender;
 use tonic::{Request, Response, Status};
 
 use self::ibc_server::Ibc;
+use solo_machine_core::signer::to_sign_mode;
 
 const DEFAULT_MEMO: &str = "solo-machine-memo";
 
@@ -77,6 +78,9 @@ where
             .parse()
             .map_err(|err: anyhow::Error| Status::invalid_argument(err.to_string()))?;
         let receiver = request.receiver_address;
+        let sign_mode = request.sign_mode.unwrap_or_else(|| "direct".to_owned());
+        let sign_mode =
+            to_sign_mode(&sign_mode).map_err(|e| Status::invalid_argument(e.to_string()))?;
 
         let transaction_hash = self
             .core_service
@@ -88,6 +92,7 @@ where
                 denom,
                 receiver,
                 memo,
+                sign_mode,
             )
             .await
             .map_err(|err| {

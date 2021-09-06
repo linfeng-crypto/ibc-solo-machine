@@ -45,6 +45,8 @@ message MintRequest {
     string denom = 5;
     // Receiver address on IBC enabled chain (if this is not provided, tokens will be sent to signer's address)
     optional string receiver_address = 6;
+    // Set the sign mode, (direct | amino-json)
+    optional string sign_mode = 7;
 }
 
 message MintResponse {

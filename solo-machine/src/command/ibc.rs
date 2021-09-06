@@ -3,6 +3,7 @@ use cli_table::{
     format::Justify, print_stdout, Cell, Color, ColorChoice, Row, RowStruct, Style, Table,
 };
 use k256::ecdsa::VerifyingKey;
+use solo_machine_core::signer::to_sign_mode;
 use solo_machine_core::{
     cosmos::crypto::{PublicKey, PublicKeyAlgo},
     ibc::core::ics24_host::identifier::{ChainId, Identifier},
@@ -54,6 +55,9 @@ pub enum IbcCommand {
         /// Optional request ID (for tracking purposes)
         #[structopt(long)]
         request_id: Option<String>,
+        /// Choose sign mode (direct|amino-json)
+        #[structopt(long, default_value = "direct")]
+        sign_mode: String,
     },
     /// Burn some tokens on IBC enabled chain
     Burn {
@@ -126,10 +130,16 @@ impl IbcCommand {
                 receiver,
                 memo,
                 request_id,
-            } => ibc_service
-                .mint(signer, chain_id, request_id, amount, denom, receiver, memo)
-                .await
-                .map(|_| ()),
+                sign_mode,
+            } => {
+                let sign_mode = to_sign_mode(&sign_mode)?;
+                ibc_service
+                    .mint(
+                        signer, chain_id, request_id, amount, denom, receiver, memo, sign_mode,
+                    )
+                    .await
+                    .map(|_| ())
+            }
             Self::Burn {
                 chain_id,
                 amount,

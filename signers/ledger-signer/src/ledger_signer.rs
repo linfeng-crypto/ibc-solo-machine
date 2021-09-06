@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use async_trait::async_trait;
 use solo_machine_core::cosmos::crypto::PublicKey;
-use solo_machine_core::signer::{AddressAlgo, LedgerCurrency, Message};
+use solo_machine_core::signer::{AddressAlgo, LedgerAppType, Message};
 use solo_machine_core::{Signer, ToPublicKey};
 use std::sync::Arc;
 use zx_bip44::BIP44Path;
@@ -13,7 +13,7 @@ use crate::LedgerTrait;
 const DEFAULT_HD_PATH: &str = "m/44'/118'/0'/0/0";
 const DEFAULT_ACCOUNT_PREFIX: &str = "cosmos";
 const DEFAULT_ADDRESS_ALGO: &str = "secp256k1";
-const DEFAULT_LEDGER_CURRENCY: &str = "cosmos";
+const DEFAULT_LEDGER_APP: &str = "cosmos";
 const DEFAULT_LEDGER_REQUIRE_CONFIRMATION: &str = "false";
 
 pub struct LedgerSigner {
@@ -63,6 +63,7 @@ impl ToPublicKey for LedgerSigner {
 #[async_trait]
 impl Signer for LedgerSigner {
     async fn sign(&self, _request_id: Option<&str>, message: Message<'_>) -> Result<Vec<u8>> {
+        println!("sign message: {:?}", message);
         let data = message.as_ref();
         let result = self.ledger.sign_message(&self.hd_path, data).await?;
         Ok(result)
@@ -85,6 +86,7 @@ impl LedgerSigner {
         algo: AddressAlgo,
         require_confirmation: bool,
     ) -> Result<Self> {
+        env_logger::init();
         let path = BIP44Path::from_string(hd_path).context("input invalid hd path")?;
         Ok(Self {
             ledger,
@@ -96,8 +98,8 @@ impl LedgerSigner {
     }
 
     pub fn from_env() -> Result<Self> {
-        let ledger_currency = get_env("LEDGER_CURRENCY")
-            .unwrap_or_else(|_| DEFAULT_LEDGER_CURRENCY.to_string())
+        let app_kind = get_env("LEDGER_APP")
+            .unwrap_or_else(|_| DEFAULT_LEDGER_APP.to_string())
             .parse()?;
         let hd_path = get_env("SOLO_HD_PATH").unwrap_or_else(|_| DEFAULT_HD_PATH.to_string());
         let account_prefix =
@@ -113,19 +115,20 @@ impl LedgerSigner {
         let algo = get_env("SOLO_ADDRESS_ALGO")
             .unwrap_or_else(|_| DEFAULT_ADDRESS_ALGO.to_string())
             .parse()?;
-        let ledger = match ledger_currency {
-            LedgerCurrency::CryptoCom => {
+        println!("use app {:?}", app_kind);
+        let ledger = match app_kind {
+            LedgerAppType::CryptoCom => {
                 let app = CryptoApp;
                 let ledger_hid = LeaderHid::new(app)?;
                 Box::new(ledger_hid) as Box<dyn LedgerTrait>
             }
-            LedgerCurrency::Cosmos => {
+            LedgerAppType::Cosmos => {
                 let app = CosmosApp;
                 let ledger_hid = LeaderHid::new(app)?;
                 Box::new(ledger_hid) as Box<dyn LedgerTrait>
             }
             #[cfg(feature = "ethermint")]
-            LedgerCurrency::Ethermint => {
+            LedgerAppType::Ethermint => {
                 todo!("create Ethereum app")
             }
         };

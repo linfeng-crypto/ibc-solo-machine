@@ -151,6 +151,7 @@ impl ChainCommand {
         color_choice: ColorChoice,
     ) -> Result<()> {
         let chain_service = ChainService::new_with_notifier(db_pool, sender);
+        println!("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 0");
 
         match self {
             Self::Add {
@@ -185,6 +186,7 @@ impl ChainCommand {
                     trusted_height,
                     trusted_hash,
                 };
+                println!("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 
                 chain_service
                     .add(&config, &signer.to_public_key().await?.encode())

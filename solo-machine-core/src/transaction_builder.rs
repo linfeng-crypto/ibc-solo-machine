@@ -579,6 +579,7 @@ async fn build_signature(
     };
 
     let sign_doc_bytes = proto_encode(&sign_doc)?;
+    println!("[todo: remove]build protocol sign bytes");
 
     signer
         .sign(request_id, Message::SignDoc(&sign_doc_bytes))
@@ -951,6 +952,7 @@ async fn sign(
     request_id: Option<&str>,
     sign_bytes: SignBytes,
 ) -> Result<Vec<u8>> {
+    println!("[todo: remove] sign bytes");
     let sign_bytes = proto_encode(&sign_bytes)?;
     let signature = signer
         .sign(request_id, Message::SignBytes(&sign_bytes))

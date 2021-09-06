@@ -5,6 +5,8 @@ use anyhow::{anyhow, Error, Result};
 use async_trait::async_trait;
 
 use crate::cosmos::crypto::PublicKey;
+pub use cosmos_sdk_proto::cosmos::tx::signing::v1beta1::SignMode;
+// use cosmos_sdk_proto
 
 #[derive(Debug, Clone, Copy)]
 /// Supported algorithms for address generation
@@ -67,9 +69,9 @@ impl AsRef<[u8]> for Message<'_> {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 /// Ledger supported currencies
-pub enum LedgerCurrency {
+pub enum LedgerAppType {
     /// crypto.com coin
     CryptoCom,
     /// Cosmos coin
@@ -79,12 +81,12 @@ pub enum LedgerCurrency {
     Ethermint,
 }
 
-impl FromStr for LedgerCurrency {
+impl FromStr for LedgerAppType {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "crypto-com" => Ok(Self::CryptoCom),
+            "crypto-com" | "crypto.com" | "cryptocom" => Ok(Self::CryptoCom),
             "cosmos" => Ok(Self::Cosmos),
             #[cfg(feature = "ethermint")]
             "ethermint" => Ok(Self::Ethermint),
@@ -162,6 +164,15 @@ impl<T: Signer + ?Sized> Signer for Arc<T> {
 
 /// Trait to register a signer
 pub trait SignerRegistrar {
-    /// Registers a new signer
+    /// Registers a new signerss
     fn register(&mut self, signer: Arc<dyn Signer>);
+}
+
+/// change string to `SignMode`
+pub fn to_sign_mode(s: &str) -> anyhow::Result<SignMode> {
+    match s {
+        "direct" => Ok(SignMode::Direct),
+        "amino-json" => Ok(SignMode::LegacyAminoJson),
+        _ => Err(anyhow!("only support `direct` or `amino-json`")),
+    }
 }

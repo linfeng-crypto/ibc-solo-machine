@@ -80,7 +80,7 @@ macro_rules! impl_any_conversion {
                     value.type_url
                 );
 
-                <Self as ::prost::Message>::decode(value.value.as_slice()).map_err(Into::into)
+                <Self as prost::Message>::decode(value.value.as_slice()).map_err(Into::into)
             }
 
             fn to_any(&self) -> ::anyhow::Result<::prost_types::Any> {

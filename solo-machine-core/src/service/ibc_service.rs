@@ -31,6 +31,7 @@ use tendermint_rpc::{
 };
 use tokio::sync::mpsc::UnboundedSender;
 
+use crate::signer::SignMode;
 use crate::{
     cosmos::crypto::PublicKey,
     event::{notify_event, Event},
@@ -280,6 +281,7 @@ impl IbcService {
         denom: Identifier,
         receiver: Option<String>,
         memo: String,
+        _sign_mode: SignMode,
     ) -> Result<String> {
         let mut chain = chain::get_chain(&self.db_pool, &chain_id)
             .await?
