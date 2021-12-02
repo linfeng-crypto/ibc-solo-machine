@@ -10,6 +10,7 @@ pub mod model;
 pub mod service;
 pub mod signer;
 pub(crate) mod transaction_builder;
+pub mod utils;
 
 #[doc(inline)]
 pub use self::{

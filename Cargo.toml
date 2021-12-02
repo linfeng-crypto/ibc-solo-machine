@@ -4,6 +4,7 @@ members = [
     "solo-machine-core",
     "event-hooks/stdout-logger",
     "signers/mnemonic-signer",
+    "app",
 ]
 
 [profile.release]

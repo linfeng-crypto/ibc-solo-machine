@@ -10,6 +10,7 @@ use solo_machine_core::{
     ibc::core::ics24_host::identifier::{ChainId, Identifier, PortId},
     model::{ChainConfig, ChainKey, Fee},
     service::ChainService,
+    utils::parse_trusted_hash,
     DbPool, Event, ToPublicKey,
 };
 use structopt::StructOpt;
@@ -425,18 +426,6 @@ impl ChainCommand {
             }
         }
     }
-}
-
-fn parse_trusted_hash(hash: &str) -> Result<[u8; 32]> {
-    ensure!(!hash.is_empty(), "empty trusted hash");
-
-    let bytes = hex::decode(hash).context("invalid trusted hash hex bytes")?;
-    ensure!(bytes.len() == 32, "trusted hash length should be 32");
-
-    let mut trusted_hash = [0; 32];
-    trusted_hash.clone_from_slice(&bytes);
-
-    Ok(trusted_hash)
 }
 
 fn into_row(key: ChainKey) -> RowStruct {

@@ -24,7 +24,7 @@ use crate::{
 };
 
 /// State of an IBC enabled chain
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Chain {
     /// ID of chain
     pub id: ChainId,
@@ -127,7 +127,7 @@ struct RawChain {
 }
 
 /// Configuration related to an IBC enabled chain
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChainConfig {
     /// gRPC address
     pub grpc_addr: String,
@@ -155,7 +155,7 @@ pub struct ChainConfig {
 }
 
 /// Fee and gas configuration
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Fee {
     /// Fee amount
     pub amount: Decimal,
@@ -259,6 +259,18 @@ pub async fn get_chain<'e>(
         .context("unable to query chain from database")?
         .map(|raw: RawChain| raw.try_into())
         .transpose()
+}
+
+/// get all chains from db
+pub async fn get_chains<'e>(executor: impl Executor<'e, Database = Db>) -> Result<Vec<Chain>> {
+    let r = sqlx::query_as("SELECT * FROM chains")
+        .fetch_all(executor)
+        .await
+        .context("unable to query chain id list from database")?
+        .into_iter()
+        .filter_map(|row: RawChain| row.try_into().ok())
+        .collect();
+    Ok(r)
 }
 
 /// Adds connection details for given chain id
