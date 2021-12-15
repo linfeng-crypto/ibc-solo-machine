@@ -10,10 +10,14 @@ iced = { version = "0.3.0", features = ["tokio", "debug"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 anyhow = "1.0"
+solo-machine = { path = "../solo-machine" }
 solo-machine-core = { path = "../solo-machine-core"}
 directories-next = "2.0"
 tokio = { version = "1.14", features = ["fs"] }
 rust_decimal = "1.17.0"
 num-rational = "0.4.0"
 tendermint = "0.23.0"
-
+fern = "0.6"
+log = "0.4"
+chrono = "0.4"
+dotenv = "0.15.0"

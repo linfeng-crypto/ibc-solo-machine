@@ -18,9 +18,10 @@ pub struct MainPage {
 /// filt what type of chains to show
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Filter {
+    New,
     All,
     Active,
-    DisConnected,
+    Closed,
 }
 
 impl Default for Filter {
@@ -35,7 +36,8 @@ impl Filter {
         match self {
             Self::All => true,
             Self::Active => chain.is_active(),
-            Self::DisConnected => !chain.is_active(),
+            Self::Closed => !chain.is_active(),
+            Self::New => false,
         }
     }
 }
@@ -43,17 +45,19 @@ impl Filter {
 /// the controller of filter
 #[derive(Debug, Default, Clone)]
 pub struct Controller {
+    new_button: button::State,
     all_button: button::State,
     active_button: button::State,
-    disconnected_button: button::State,
+    closed_button: button::State,
 }
 
 impl Controller {
     pub fn view(&mut self, chains: &[Chain], current_filter: Filter) -> Row<Message> {
         let Controller {
+            new_button,
             all_button,
             active_button,
-            disconnected_button,
+            Closed_button,
         } = self;
 
         let invalid_chains_num = chains.iter().filter(|chain| !chain.is_active()).count();
@@ -72,7 +76,7 @@ impl Controller {
             .align_items(Align::Center)
             .push(
                 Text::new(&format!(
-                    "{} {} disconnected",
+                    "{} {} Closed",
                     invalid_chains_num,
                     if invalid_chains_num == 1 {
                         "chain"
@@ -88,6 +92,12 @@ impl Controller {
                     .width(Length::Shrink)
                     .spacing(10)
                     .push(filter_button(
+                        new_button,
+                        "New",
+                        Filter::New,
+                        current_filter,
+                    ))
+                    .push(filter_button(
                         all_button,
                         "All",
                         Filter::All,
@@ -100,9 +110,9 @@ impl Controller {
                         current_filter,
                     ))
                     .push(filter_button(
-                        disconnected_button,
-                        "Disconnected",
-                        Filter::DisConnected,
+                        Closed_button,
+                        "Closed",
+                        Filter::Closed,
                         current_filter,
                     )),
             )

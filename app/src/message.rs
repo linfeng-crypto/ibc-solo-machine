@@ -1,11 +1,8 @@
 use iced::{Container, Element, HorizontalAlignment, Length, Text};
 use solo_machine_core::ibc::core::ics24_host::identifier::ChainId;
-use solo_machine_core::model::get_chains;
-use solo_machine_core::model::{Chain, ConnectionDetails};
-use std::path::PathBuf;
-use tokio::io::AsyncReadExt;
 
 use crate::error::AppError;
+use crate::pages::add_chain_page::NewChainMessage;
 use crate::pages::main_page::Filter;
 use crate::state::SavedState;
 
@@ -15,19 +12,20 @@ pub enum ChainMessage {
     /// when press action button
     DoAction(ChainId),
     /// when press disconnect button
-    DoDisconnect(ChainId),
+    DoClose(ChainId),
     /// when press details button, show the chain details
     ShowDetailInfo(ChainId),
     /// Set to Active Status
     SetActive,
-    /// Set to disconnected
-    SetDisconnected,
+    /// Set to Closed
+    SetClosed,
 }
 
 #[derive(Debug, Clone)]
 pub enum Message {
     /// the main page, show all the chains db
     ChainMessage(usize, ChainMessage),
+    NewChainMessage(NewChainMessage),
     /// Filter changed
     FilterChanged(Filter),
     /// input when add chain

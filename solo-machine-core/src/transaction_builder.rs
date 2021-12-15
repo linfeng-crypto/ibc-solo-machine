@@ -353,6 +353,7 @@ pub async fn msg_channel_close_init(
         .solo_machine_channel_id
         .as_ref()
         .map(|s| s.to_string());
+    println!("{:?}", chain.connection_details);
     if solo_machine_channel_id.is_none() {
         bail!("channel already closed");
     }

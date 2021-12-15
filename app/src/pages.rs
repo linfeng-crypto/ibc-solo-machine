@@ -1,19 +1,18 @@
 pub mod add_chain_page;
 pub mod main_page;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Page {
     /// the main page
-    MainPage(main_page::MainPage),
+    MainPage,
     /// the add chain page
-    AddChainInput(add_chain_page::AddChainPage),
+    AddChainInput,
     /// TODO: other page
     Other,
 }
 
 impl Default for Page {
     fn default() -> Self {
-        let mainpage = main_page::MainPage::default();
-        Self::MainPage(mainpage)
+        Self::MainPage
     }
 }

@@ -1,8 +1,5 @@
 use crate::message::ChainMessage;
-use crate::style::{
-    self, button_active_icon, button_disconnect_icon, status_active_icon, status_disconnected_icon,
-    style_chain_text, style_detail_button,
-};
+use crate::style::{self, button_icon, style_chain_text, style_input_title};
 use iced::{button, Align, Button, Element, Row};
 use solo_machine_core::model::Chain as DbChain;
 
@@ -20,7 +17,7 @@ pub struct Chain {
 #[derive(Debug, Clone)]
 pub enum ChainStatus {
     Active(button::State),
-    Disconnected(button::State),
+    Closed(button::State),
 }
 
 /// return connection status
@@ -38,7 +35,7 @@ impl Chain {
         let chain_status = if is_connected(&db_chain) {
             ChainStatus::Active(button::State::new())
         } else {
-            ChainStatus::Disconnected(button::State::new())
+            ChainStatus::Closed(button::State::new())
         };
         Chain {
             inner: db_chain,
@@ -55,9 +52,9 @@ impl Chain {
     pub fn update(&mut self, message: ChainMessage) {
         match message {
             ChainMessage::SetActive => {
-                self.status = ChainStatus::Disconnected(button::State::new());
+                self.status = ChainStatus::Closed(button::State::new());
             }
-            ChainMessage::SetDisconnected => {
+            ChainMessage::SetClosed => {
                 self.status = ChainStatus::Active(button::State::new());
             }
             _ => {}
@@ -68,36 +65,36 @@ impl Chain {
     /// status chain_id  action_button detail_button
     pub fn view(&mut self) -> Element<ChainMessage> {
         let (action_button, status_icon) = match &mut self.status {
-            ChainStatus::Disconnected(s) => {
-                let button = Button::new(s, button_active_icon())
+            ChainStatus::Closed(s) => {
+                let button = Button::new(s, button_icon("connect", 150))
                     .on_press(ChainMessage::DoAction(self.inner.id.clone()))
                     .padding(10)
                     .style(style::Button::Icon);
-                let status_icon = status_disconnected_icon();
+                let status_icon = button_icon("closed", 150);
                 (button, status_icon)
             }
             ChainStatus::Active(s) => {
-                let button = Button::new(s, button_disconnect_icon())
-                    .on_press(ChainMessage::DoDisconnect(self.inner.id.clone()))
+                let button = Button::new(s, button_icon("close", 150))
+                    .on_press(ChainMessage::DoClose(self.inner.id.clone()))
                     .padding(10)
                     .style(style::Button::Icon);
-                let status_icon = status_active_icon();
+                let status_icon = button_icon("connect", 150);
                 (button, status_icon)
             }
         };
 
         Row::new()
-            .spacing(20)
+            .spacing(40)
             .align_items(Align::Center)
-            .push(status_icon)
+            .push(style_input_title("chain id: "))
             .push(style_chain_text(&self.inner.id))
             .push(action_button)
-            .push(
-                Button::new(&mut self.button_detail, style_detail_button())
-                    .on_press(ChainMessage::ShowDetailInfo(self.inner.id.clone()))
-                    .padding(10)
-                    .style(style::Button::Icon),
-            )
+            // .push(
+            //     Button::new(&mut self.button_detail, style_detail_button())
+            //         .on_press(ChainMessage::ShowDetailInfo(self.inner.id.clone()))
+            //         .padding(10)
+            //         .style(style::Button::Icon),
+            // )
             .into()
     }
 }

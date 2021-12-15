@@ -55,49 +55,23 @@ const ICONS: Font = Font::External {
     bytes: include_bytes!("../fonts/icons.ttf"),
 };
 
+pub fn style_input_title(title: &str) -> Text {
+    Text::new(title)
+        .width(Length::Units(150))
+        .horizontal_alignment(HorizontalAlignment::Left)
+        .size(25)
+}
+
 pub fn style_chain_text(chain_id: &str) -> Text {
     Text::new(chain_id)
-        .width(Length::Units(20))
+        .width(Length::Units(200))
         .horizontal_alignment(HorizontalAlignment::Left)
-        .size(20)
+        .size(25)
 }
 
-pub fn style_detail_button() -> Text {
-    Text::new("detail")
-        .width(Length::Units(20))
+pub fn button_icon(title: &str, width: u16) -> Text {
+    Text::new(title)
+        .width(Length::Units(width))
         .horizontal_alignment(HorizontalAlignment::Center)
         .size(20)
-}
-
-fn icon(unicode: char) -> Text {
-    Text::new(&unicode.to_string())
-        .font(ICONS)
-        .width(Length::Units(20))
-        .horizontal_alignment(HorizontalAlignment::Center)
-        .size(20)
-}
-
-/// active button icon
-pub fn button_active_icon() -> Text {
-    icon('\u{8646}')
-}
-
-/// ✄
-pub fn button_disconnect_icon() -> Text {
-    icon('\u{2704}')
-}
-
-/// refresh icon ⟳
-pub fn button_refresh_icon() -> Text {
-    icon('\u{10227}')
-}
-
-/// ✓
-pub fn status_active_icon() -> Text {
-    icon('\u{2713}')
-}
-
-/// ⚠
-pub fn status_disconnected_icon() -> Text {
-    icon('\u{26A0}')
 }
